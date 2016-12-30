@@ -1,4 +1,4 @@
-function [SensorsCfg] = SPF_AssignFiltersToSensors(SensorsCfg,FiltersCfg)
+function [SensorsCfg] = SPF_PORAT91_AssignFiltersToSensors(SensorsCfg,FiltersCfg)
 for SensorID=1:numel(SensorsCfg)
     if isempty(FiltersCfg)
         SensorsCfg{SensorID}.Filter.Num=1;

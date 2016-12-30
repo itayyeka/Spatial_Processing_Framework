@@ -31,6 +31,7 @@ distant sources/sensors in the array.
 * ShapeCfg.Orientation.Phi
 * ShapeCfg.Orientation.Theta
 %}
+global SPF_FLAGS;
 if true
     if ~isfield(ElementCfg,'Position')
         %% Distance
@@ -82,8 +83,9 @@ if true
     if ~isfield(ElementCfg,'Position')
         ElementCfg.Position=...
             [...
+            ElementCfg.Distance*cos(ElementCfg.Theta)*cos(ElementCfg.Phi-pi/2) ... 
+            ... The Phi is with reference to the y axis
             ElementCfg.Distance*cos(ElementCfg.Theta)*cos(ElementCfg.Phi) ...
-            ElementCfg.Distance*cos(ElementCfg.Theta)*sin(ElementCfg.Phi) ...
             ElementCfg.Distance*sin(ElementCfg.Theta) ...
             ];
     end
@@ -104,6 +106,11 @@ if true
             ElementCfg.ShapeCfg.nElements ...
             ));
         newElements=cellfun(@(X) [X,0,0],xVec,'UniformOutput',false);
+    end
+    %% NESTED_ARRAYS_sensors
+    if strcmpi(ElementCfg.Shape,'NESTED_ARRAYS_sensors')
+        %% Create the ula on the x axis (y,z) = (0,0)        
+        newElements=SPF_NESTED_ARRAYS_GenerateSenors(ElementCfg);
     end
 end
 %% rotate the shape to the wnated orientation
@@ -126,6 +133,8 @@ RotMat_Theta= @(Theta) ... rotate around the x axis right-hand rule
 x_VEC=cellfun(@(X) X(1),newElements);
 y_VEC=cellfun(@(X) X(2),newElements);
 z_VEC=cellfun(@(X) X(3),newElements);
+Orientation_Theta=ElementCfg.ShapeCfg.Orientation.Theta;
+Orientation_Phi=ElementCfg.ShapeCfg.Orientation.Phi;
 if length(unique(y_VEC))==1 && length(unique(z_VEC))==1
     %{
     If all y values are the same and also all z values are the same, than
@@ -134,31 +143,19 @@ if length(unique(y_VEC))==1 && length(unique(z_VEC))==1
     %}
     newElements_Oriented=cellfun(...
         @(X) ...
-        RotMat_Theta(ElementCfg.ShapeCfg.Orientation.Theta) ...
-        *RotMat_Phi(ElementCfg.ShapeCfg.Orientation.Phi) ...
+        RotMat_Theta(Orientation_Theta) ...
+        *RotMat_Phi(Orientation_Phi) ...
         *X(:),...
         newElements,...
         'UniformOutput',false);
 else
     newElements_Oriented=cellfun(...
         @(X) ...
-        RotMat_Phi(ElementCfg.ShapeCfg.Orientation.Phi) ...
-        *RotMat_Theta(ElementCfg.ShapeCfg.Orientation.Theta) ...
+        RotMat_Phi(Orientation_Phi) ...
+        *RotMat_Theta(Orientation_Theta) ...
         *X(:),...
         newElements,...
         'UniformOutput',false);
-end
-if false
-    %% DEBUG
-    close all;
-    x_ROTVEC=cellfun(@(X) X(1),newElements_Oriented);
-    y_ROTVEC=cellfun(@(X) X(2),newElements_Oriented);
-    z_ROTVEC=cellfun(@(X) X(3),newElements_Oriented);
-    figure;
-    subplot(1,2,1);
-    scatter3(x_VEC,y_VEC,z_VEC);
-    subplot(1,2,2);
-    scatter3(x_ROTVEC,y_ROTVEC,z_ROTVEC);
 end
 %% Move the shape to the wanted position
 newElements_Oriented_Positioned=cellfun(...
@@ -168,6 +165,37 @@ newElements_Oriented_Positioned=cellfun(...
 Array_Addition={};
 for ElID=1:numel(newElements_Oriented_Positioned)
     Array_Addition{end+1}.Position=newElements_Oriented_Positioned{ElID};
+end
+if SPF_FLAGS.VERBOSE
+    %% DEBUG
+    close all;
+    x_ROTVEC=cellfun(@(X) X(1),newElements_Oriented);
+    y_ROTVEC=cellfun(@(X) X(2),newElements_Oriented);
+    z_ROTVEC=cellfun(@(X) X(3),newElements_Oriented);
+    x_ROTVEC_POS=cellfun(@(X) X(1),newElements_Oriented_Positioned);
+    y_ROTVEC_POS=cellfun(@(X) X(2),newElements_Oriented_Positioned);
+    z_ROTVEC_POS=cellfun(@(X) X(3),newElements_Oriented_Positioned);
+    figure;
+    subplot(1,3,1);
+    scatter3(x_VEC,y_VEC,z_VEC);
+    title('before rotation and positioning');
+    xlabel('X axis');
+    ylabel('Y axis');
+    zlabel('Z axis');
+    subplot(1,3,2);
+    scatter3(x_ROTVEC,y_ROTVEC,z_ROTVEC);
+    title(['after rotation. \Phi= ' num2str(f_convert_rad_to_deg(Orientation_Phi)) ...
+        '[deg] \Theta= ' num2str(f_convert_rad_to_deg(Orientation_Theta)) '[deg]']);
+    xlabel('X axis');
+    ylabel('Y axis');
+    zlabel('Z axis');
+    subplot(1,3,3);
+    scatter3(x_ROTVEC_POS,y_ROTVEC_POS,z_ROTVEC_POS);
+    title(['after rotation and positioning. pos='  num2str(ElementCfg.Position)]);
+    xlabel('X axis');
+    ylabel('Y axis');
+    zlabel('Z axis');
+    close all;
 end
 %% Add to the Array
 Array=[...
