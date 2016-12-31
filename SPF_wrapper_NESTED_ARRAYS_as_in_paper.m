@@ -3,18 +3,18 @@ clearvars;
 Here the SimCfg is built to accuratly reproduce the smulations in PRAT91
 paper.
 %}
-SEED=100;
-rng('default');rng(SEED);
+[FuncPath,~,~]=fileparts(mfilename('fullpath'));
+addpath(genpath(fullfile(FuncPath,'SPF_Aux')));
 global SPF_FLAGS;
 SPF_FLAGS=[];
 SPF_FLAGS.VERBOSE=1;
-[FuncPath,~,~]=fileparts(mfilename('fullpath'));
-addpath(genpath(fullfile(FuncPath,'SPF_Aux')));
 %% SimCfg
 if true
     %% Algorithms
     SimCfg.Algorithms={...
-        'PORAT91_A' ...
+        ... 'CHECK' ...
+        ... 'PORAT91_A' ...
+        'NESTED_P2' ...
         };
     %% Environments
     %{
@@ -95,13 +95,14 @@ if true
             %}
             %% Sources
             EnvironmentCfg.SourcesCfg={};
+            EnvironmentCfg.Arrays={};
             if true
                 %% SourceCfg1
                 SourceCfg=[];
                 if true
                     %% Source parameters
                     SourceCfg.Distance=100;
-                    SourceCfg.Phi=f_convert_deg_to_rad(20);
+                    SourceCfg.Phi=f_convert_deg_to_rad(70);
                     SourceCfg.Theta=0;
                 end
                 EnvironmentCfg.SourcesCfg=...
@@ -110,7 +111,7 @@ if true
                 SourceCfg=[];
                 if true
                     %% Source parameters
-                    SourceCfg.Distance=100;
+                    SourceCfg.Distance=50;
                     SourceCfg.Phi=f_convert_deg_to_rad(40);
                     SourceCfg.Theta=0;
                 end
@@ -120,8 +121,8 @@ if true
                 SourceCfg=[];
                 if true
                     %% Source parameters
-                    SourceCfg.Distance=100;
-                    SourceCfg.Phi=f_convert_deg_to_rad(60);
+                    SourceCfg.Distance=10;
+                    SourceCfg.Phi=f_convert_deg_to_rad(10);
                     SourceCfg.Theta=0;
                 end
                 EnvironmentCfg.SourcesCfg=...
@@ -135,20 +136,44 @@ if true
                 SensorCfg=[];
                 if true
                     %% Sensor parameters
-                    ElementSpacing=0.1;
                     SensorCfg.Distance=0;
                     SensorCfg.Phi=0;
                     SensorCfg.Theta=0;
-                    SensorCfg.Shape='ula';
-                    SensorCfg.ShapeCfg.nElements=20;
-                    SensorCfg.ShapeCfg.Size=...
-                        (SensorCfg.ShapeCfg.nElements-1)*ElementSpacing;
+                    SensorCfg.Shape='NESTED_ARRAYS_sensors';
+                    SensorCfg.ShapeCfg.nElements=9;
+                    SensorCfg.ShapeCfg.ULAs_AngleVEC_DEG=[45 -45];
+                    SensorCfg.ShapeCfg.Size=[];
+                    SensorCfg.ShapeCfg.DenseElementsSpacing=0.01;
+                    SensorCfg.ShapeCfg.SparseElementsSpacing=...
+                        3*SensorCfg.ShapeCfg.DenseElementsSpacing;
                     SensorCfg.ShapeCfg.Orientation.Phi=0;
                     SensorCfg.ShapeCfg.Orientation.Theta=0;
                 end
+                EnvironmentCfg.Arrays{end+1}.Cfg=SensorCfg;
+                EnvironmentCfg.Arrays{end}.Sensors=...
+                    SPF_AddElements({},SensorCfg);
                 EnvironmentCfg.SensorsCfg=...
                     SPF_AddElements(EnvironmentCfg.SensorsCfg,SensorCfg);
                 %% SensorCfg2
+                SensorCfg=[];
+                if true
+                    %% Sensor parameters
+                    ElementsSpacing=0.01;
+                    SensorCfg.Distance=2.5*ElementsSpacing/2;
+                    SensorCfg.Phi=3*pi/4;
+                    SensorCfg.Theta=0;
+                    SensorCfg.Shape='ula';
+                    SensorCfg.ShapeCfg.nElements=4;
+                    SensorCfg.ShapeCfg.Size=...
+                        (SensorCfg.ShapeCfg.nElements-1)*ElementsSpacing/2;
+                    SensorCfg.ShapeCfg.Orientation.Phi=-3*pi/4;
+                    SensorCfg.ShapeCfg.Orientation.Theta=0;
+                end
+                EnvironmentCfg.Arrays{end+1}.Cfg=SensorCfg;
+                EnvironmentCfg.Arrays{end}.Sensors=...
+                    SPF_AddElements({},SensorCfg);
+                %                 EnvironmentCfg.SensorsCfg=...
+                %                     SPF_AddElements(EnvironmentCfg.SensorsCfg,SensorCfg);
                 %% SensorCfg3
                 %% ...
             end
@@ -173,9 +198,10 @@ if true
                 ScenarioCfg.DOA.res=0.5;
             end
             %% Sources
-            ScenarioCfg.Sources.SignalType='QAM';
+            ScenarioCfg.Sources.SignalType='CW';
         end
         SimCfg.Scenarios{end+1}=ScenarioCfg;
     end
 end
+%% Execute
 SPF_Main(SimCfg);

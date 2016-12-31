@@ -1,7 +1,7 @@
 function [SourcesCfg] = SPF_AssignSignalsToSources(SourcesCfg,ScenarioCfg)
 nSrc=numel(SourcesCfg);
 if strcmpi(ScenarioCfg.Sources.SignalType,'CW')
-    
+    assert('signal type not implemented yet');
 elseif strcmpi(ScenarioCfg.Sources.SignalType,'QAM')
     AmpOpt=-3:2:3;
     nOpt=length(AmpOpt);
