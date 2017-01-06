@@ -1,7 +1,13 @@
 function [SourcesCfg] = SPF_AssignSignalsToSources(SourcesCfg,ScenarioCfg)
 nSrc=numel(SourcesCfg);
 if strcmpi(ScenarioCfg.Sources.SignalType,'CW')
-    assert('signal type not implemented yet');
+    %{
+    The complex envelope of CW signals is constant. without loss of
+    generality, it can be ones...
+    %}
+    for SrcID=1:nSrc
+        SourcesCfg{SrcID}.Signal=ones(ScenarioCfg.nSnapshots,1);
+    end
 elseif strcmpi(ScenarioCfg.Sources.SignalType,'QAM')
     AmpOpt=-3:2:3;
     nOpt=length(AmpOpt);

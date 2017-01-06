@@ -115,8 +115,8 @@ if true
                     SourceCfg.Phi=f_convert_deg_to_rad(40);
                     SourceCfg.Theta=0;
                 end
-                EnvironmentCfg.SourcesCfg=...
-                    SPF_AddElements(EnvironmentCfg.SourcesCfg,SourceCfg);
+                %                 EnvironmentCfg.SourcesCfg=...
+                %                     SPF_AddElements(EnvironmentCfg.SourcesCfg,SourceCfg);
                 %% SourceCfg3
                 SourceCfg=[];
                 if true
@@ -125,8 +125,8 @@ if true
                     SourceCfg.Phi=f_convert_deg_to_rad(10);
                     SourceCfg.Theta=0;
                 end
-                EnvironmentCfg.SourcesCfg=...
-                    SPF_AddElements(EnvironmentCfg.SourcesCfg,SourceCfg);
+                %                 EnvironmentCfg.SourcesCfg=...
+                %                     SPF_AddElements(EnvironmentCfg.SourcesCfg,SourceCfg);
                 %% ...
             end
             %% Sensors
@@ -140,7 +140,7 @@ if true
                     SensorCfg.Phi=0;
                     SensorCfg.Theta=0;
                     SensorCfg.Shape='NESTED_ARRAYS_sensors';
-                    SensorCfg.ShapeCfg.nElements=9;
+                    SensorCfg.ShapeCfg.nElements=5;
                     SensorCfg.ShapeCfg.ULAs_AngleVEC_DEG=[45 -45];
                     SensorCfg.ShapeCfg.Size=[];
                     SensorCfg.ShapeCfg.DenseElementsSpacing=0.01;
@@ -149,33 +149,11 @@ if true
                     SensorCfg.ShapeCfg.Orientation.Phi=0;
                     SensorCfg.ShapeCfg.Orientation.Theta=0;
                 end
-                EnvironmentCfg.Arrays{end+1}.Cfg=SensorCfg;
-                EnvironmentCfg.Arrays{end}.Sensors=...
+                [EnvironmentCfg.Arrays{end+1}.Sensors,SensorCfg]=...
                     SPF_AddElements({},SensorCfg);
+                EnvironmentCfg.Arrays{end}.Cfg=SensorCfg;
                 EnvironmentCfg.SensorsCfg=...
-                    SPF_AddElements(EnvironmentCfg.SensorsCfg,SensorCfg);
-                %% SensorCfg2
-                SensorCfg=[];
-                if true
-                    %% Sensor parameters
-                    ElementsSpacing=0.01;
-                    SensorCfg.Distance=2.5*ElementsSpacing/2;
-                    SensorCfg.Phi=3*pi/4;
-                    SensorCfg.Theta=0;
-                    SensorCfg.Shape='ula';
-                    SensorCfg.ShapeCfg.nElements=4;
-                    SensorCfg.ShapeCfg.Size=...
-                        (SensorCfg.ShapeCfg.nElements-1)*ElementsSpacing/2;
-                    SensorCfg.ShapeCfg.Orientation.Phi=-3*pi/4;
-                    SensorCfg.ShapeCfg.Orientation.Theta=0;
-                end
-                EnvironmentCfg.Arrays{end+1}.Cfg=SensorCfg;
-                EnvironmentCfg.Arrays{end}.Sensors=...
-                    SPF_AddElements({},SensorCfg);
-                %                 EnvironmentCfg.SensorsCfg=...
-                %                     SPF_AddElements(EnvironmentCfg.SensorsCfg,SensorCfg);
-                %% SensorCfg3
-                %% ...
+                    SPF_AddElements(EnvironmentCfg.SensorsCfg,SensorCfg);                
             end
         end
         SimCfg.Environments{end+1}=EnvironmentCfg;
