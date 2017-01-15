@@ -8,7 +8,18 @@ addpath(genpath(fullfile(FuncPath,'SPF_Aux')));
 global SPF_FLAGS;
 SPF_FLAGS=[];
 SPF_FLAGS.VERBOSE=1;
-SEED=10;
+
+SEED=29;
+K=5;
+nSources=8;
+ULAs_AngleVEC_DEG=[45 -45];
+SourcesSpan=360;
+Offset_DEG=0;
+DenseElementsSpacing=0.1;
+SparseToDense_FACTOR=3.5;
+FrameSize=1000;
+nFrames=1000;
+Overlap=FrameSize-100;
 %% SimCfg
 rng('default');
 rng(SEED);
@@ -17,7 +28,8 @@ if true
     SimCfg.Algorithms={...
         ... 'CHECK' ...
         ... 'PORAT91_A' ...
-        'NESTED_P2' ...
+        ... 'NESTED_P2' ...
+        'NESTED_P2_PORAT91_A_comb' ...
         };
     %% Environments
     %{
@@ -99,38 +111,21 @@ if true
             %% Sources
             EnvironmentCfg.SourcesCfg={};
             EnvironmentCfg.Arrays={};
-            if true
+            SourceAngle_RES=SourcesSpan/nSources;
+            SourceAngle_DEG_VEC=SourceAngle_RES/2+(0:SourceAngle_RES:(SourcesSpan-SourceAngle_RES/2));
+            SourceAngle_DEG_VEC=SourceAngle_DEG_VEC+Offset_DEG;
+            for SourceID=1:nSources
+                SourceAngle_DEG=SourceAngle_DEG_VEC(SourceID);
                 %% SourceCfg1
                 SourceCfg=[];
                 if true
                     %% Source parameters
                     SourceCfg.Distance=100;
-                    SourceCfg.Phi=f_convert_deg_to_rad(70);
+                    SourceCfg.Phi=f_convert_deg_to_rad(SourceAngle_DEG);
                     SourceCfg.Theta=0;
                 end
                 EnvironmentCfg.SourcesCfg=...
-                    SPF_AddElements(EnvironmentCfg.SourcesCfg,SourceCfg);
-                %% SourceCfg2
-                SourceCfg=[];
-                if true
-                    %% Source parameters
-                    SourceCfg.Distance=50;
-                    SourceCfg.Phi=f_convert_deg_to_rad(40);
-                    SourceCfg.Theta=0;
-                end
-                %                 EnvironmentCfg.SourcesCfg=...
-                %                     SPF_AddElements(EnvironmentCfg.SourcesCfg,SourceCfg);
-                %% SourceCfg3
-                SourceCfg=[];
-                if true
-                    %% Source parameters
-                    SourceCfg.Distance=10;
-                    SourceCfg.Phi=f_convert_deg_to_rad(10);
-                    SourceCfg.Theta=0;
-                end
-                %                 EnvironmentCfg.SourcesCfg=...
-                %                     SPF_AddElements(EnvironmentCfg.SourcesCfg,SourceCfg);
-                %% ...
+                    SPF_AddElements(EnvironmentCfg.SourcesCfg,SourceCfg);                
             end
             %% Sensors
             EnvironmentCfg.SensorsCfg={};
@@ -146,9 +141,9 @@ if true
                     SensorCfg.ShapeCfg.nElements=5;
                     SensorCfg.ShapeCfg.ULAs_AngleVEC_DEG=[45 -45];
                     SensorCfg.ShapeCfg.Size=[];
-                    SensorCfg.ShapeCfg.DenseElementsSpacing=0.01;
+                    SensorCfg.ShapeCfg.DenseElementsSpacing=DenseElementsSpacing;
                     SensorCfg.ShapeCfg.SparseElementsSpacing=...
-                        3*SensorCfg.ShapeCfg.DenseElementsSpacing;
+                        SparseToDense_FACTOR*SensorCfg.ShapeCfg.DenseElementsSpacing;
                     SensorCfg.ShapeCfg.Orientation.Phi=0;
                     SensorCfg.ShapeCfg.Orientation.Theta=0;
                 end
@@ -156,7 +151,7 @@ if true
                     SPF_AddElements({},SensorCfg);
                 EnvironmentCfg.Arrays{end}.Cfg=SensorCfg;
                 EnvironmentCfg.SensorsCfg=...
-                    SPF_AddElements(EnvironmentCfg.SensorsCfg,SensorCfg);                
+                    SPF_AddElements(EnvironmentCfg.SensorsCfg,SensorCfg);
             end
         end
         SimCfg.Environments{end+1}=EnvironmentCfg;
@@ -169,17 +164,19 @@ if true
         if true
             %% General
             if true
-                ScenarioCfg.nSnapshots=100;
                 %% Physiscs
                 ScenarioCfg.fCarrier=1e9;
                 ScenarioCfg.PropagationSpeed=3e8;
                 %% Statistics
-                ScenarioCfg.Noise.SNR=inf;
+                ScenarioCfg.Noise.SNR=20;
                 %% Algorithm
                 ScenarioCfg.DOA.res=0.5;
+                ScenarioCfg.nFrames=nFrames;
+                ScenarioCfg.FrameSize=FrameSize;
+                ScenarioCfg.Overlap=Overlap;
             end
             %% Sources
-            ScenarioCfg.Sources.SignalType='CW';
+            ScenarioCfg.Sources.SignalType='QAM';
         end
         SimCfg.Scenarios{end+1}=ScenarioCfg;
     end

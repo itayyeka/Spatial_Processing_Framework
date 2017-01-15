@@ -4,13 +4,14 @@ Here the SimCfg is built to accuratly reproduce the smulations in PRAT91
 paper.
 %}
 SEED=100;
-rng('default');rng(SEED);
 global SPF_FLAGS;
 SPF_FLAGS=[];
 SPF_FLAGS.VERBOSE=1;
 [FuncPath,~,~]=fileparts(mfilename('fullpath'));
 addpath(genpath(fullfile(FuncPath,'SPF_Aux')));
 %% SimCfg
+rng('default');
+rng(SEED);
 if true
     %% Algorithms
     SimCfg.Algorithms={...
@@ -124,8 +125,8 @@ if true
                     SourceCfg.Phi=f_convert_deg_to_rad(60);
                     SourceCfg.Theta=0;
                 end
-                EnvironmentCfg.SourcesCfg=...
-                    SPF_AddElements(EnvironmentCfg.SourcesCfg,SourceCfg);
+%                 EnvironmentCfg.SourcesCfg=...
+%                     SPF_AddElements(EnvironmentCfg.SourcesCfg,SourceCfg);
                 %% ...
             end
             %% Sensors
@@ -140,7 +141,7 @@ if true
                     SensorCfg.Phi=0;
                     SensorCfg.Theta=0;
                     SensorCfg.Shape='ula';
-                    SensorCfg.ShapeCfg.nElements=20;
+                    SensorCfg.ShapeCfg.nElements=5;
                     SensorCfg.ShapeCfg.Size=...
                         (SensorCfg.ShapeCfg.nElements-1)*ElementSpacing;
                     SensorCfg.ShapeCfg.Orientation.Phi=0;
@@ -168,12 +169,13 @@ if true
                 ScenarioCfg.fCarrier=1e9;
                 ScenarioCfg.PropagationSpeed=3e8;
                 %% Statistics
-                ScenarioCfg.Noise.Sigma=0.01;
+                ScenarioCfg.Noise.SNR=inf;
                 %% Algorithm
                 ScenarioCfg.DOA.res=0.5;
             end
             %% Sources
             ScenarioCfg.Sources.SignalType='QAM';
+%             ScenarioCfg.Sources.SignalType='CW';
         end
         SimCfg.Scenarios{end+1}=ScenarioCfg;
     end

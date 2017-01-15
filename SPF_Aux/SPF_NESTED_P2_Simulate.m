@@ -6,93 +6,12 @@ EnvironmentCfg.SourcesCfg=...
     );
 [InputSig_CellArr_Noised] = SPF_GenInput(EnvironmentCfg,ScenarioCfg);
 %% Implementation of the paper "NESTED ARRAYS IN TWO DIMENSIONS, PARTII"
-if true
-    %% Generate the virtual array input signal
-    %{
-    After creating the input signals to the physical array (InputSig_CellArr_Noised)
-    we actually ahve the x[k] from eqn8 in the paper
-    %}
-    %% fetch x
-    nSensors=numel(InputSig_CellArr_Noised);
-    nSnapshots=length(InputSig_CellArr_Noised{1});
-    x_MAT=cell2mat(reshape(InputSig_CellArr_Noised,[],1));
-    x_CELL=mat2cell(x_MAT,nSensors,ones(1,nSnapshots));
-    %% Rxx=E{x*x^H}
-    Rxx_t_CELL=cellfun( ...
-        @(x) x(:)*conj(transpose(x(:))),...
-        x_CELL,'UniformOutput',false);
-    Rxx_t=cell2mat(reshape(Rxx_t_CELL,1,1,[]));
-    Rxx=mean(Rxx_t,3);
-    %% z=vec(Rxx)
-    z=Rxx(:);
-    %% b indices
-    if true
-        %% fetch array configuration
-        ArrCfg=EnvironmentCfg.Arrays{1}.Cfg;
-        Nd=ArrCfg.Nd;
-        Ns=ArrCfg.Ns;
-        Nd_Tilda=ArrCfg.Nd_Tilda;
-        N1_s=ArrCfg.N1_s;
-        N2_s=ArrCfg.N2_s;
-        lambda1=ArrCfg.lambda1;
-        lambda2=ArrCfg.lambda2;
-        DenseArrayGenerator=ArrCfg.DenseArrayGenerator;
-        SparseArrayGenerator=ArrCfg.SparseArrayGenerator;
-        K1=ArrCfg.K1;
-        K2=ArrCfg.K2;
-        %% build all possible diffs
-        Sparse_mVEC=ArrCfg.Sparse_mVEC;
-        Sparse_mVEC=unique([Sparse_mVEC -Sparse_mVEC]);
-        Sparse_nVEC=ArrCfg.Sparse_nVEC;
-        Sparse_nVEC=unique([Sparse_nVEC -Sparse_nVEC]);
-        Dense_mVEC=ArrCfg.Dense_mVEC;
-        Dense_mVEC=unique([Dense_mVEC -Dense_mVEC]);
-        Dense_nVEC=ArrCfg.Dense_nVEC;
-        Dense_nVEC=unique([Dense_nVEC -Dense_nVEC]);
-        diff_POS_VEC=[];
-        diff_VAL_VEC=[];
-        for ms=Sparse_mVEC
-            for ns=Sparse_nVEC
-                for md=Dense_mVEC
-                    for nd=Dense_nVEC
-                        diff_POS=...
-                            SparseArrayGenerator*[ms ; ns] ...
-                            - ...
-                            DenseArrayGenerator*[md ; nd];
-                        diff_POS_VEC=[diff_POS_VEC diff_POS];
-                        diff_VAL_VEC=[diff_VAL_VEC [ms;ns;md;nd]];
-                    end
-                end
-            end
-        end
-        %% build the co-array from the b_k1 b_k2 lines 
-        k1_Min=-N1_s*lambda1-(lambda1-1)/2;
-        k1_Max=lambda1*N1_s+(lambda1-1)/2;
-        k2_Min=-((N2_s-1)*lambda2+lambda2-1);
-        k2_Max=lambda2*(N2_s-1)+lambda2-1;
-        k1_VEC=k1_Min:k1_Max;
-        k2_VEC=k2_Min:k2_Max;
-        Rxx_RowIdVec=[];   
-        k1k2_POS_VEC=[];
-        k1k2_VAL_VEC=[];
-        for k1=k1_VEC
-            for k2=k2_VEC                              
-                k1k2_POS_VEC=[k1k2_POS_VEC k1*Nd_Tilda(:,1)+k2*Nd_Tilda(:,2)];
-                k1k2_VAL_VEC=[k1k2_VAL_VEC [k1 ; k2]];
-            end
-        end
-        %% Match positions and indices
-        for k1k2_ID=1:size(k1k2_POS_VEC,2)
-            k1k2_POS=k1k2_POS_VEC(:,k1k2_ID);
-            for diff_ID=1:size(diff_POS_VEC,2)
-                diff_POS=diff_POS_VEC(:,diff_ID);
-                k1k2_POS
-                diff_POS
-                if isequal(k1k2_POS,diff_POS)
-                    AAA=1;
-                end
-            end
-        end
-    end
-end
+[coArray_POS_VEC,z1]=SPF_NESTED_P2_get_CoArray_InputSig(EnvironmentCfg,ScenarioCfg,InputSig_CellArr_Noised);
+assert(...
+    [...
+    'further implementation (2D spatial smoothing and MUSIC spectra) '...
+    'is not implemented yet. The main goal was to implement the extraction of z1 ' ...
+    'which is the input of the virtual coArray for further processing via cumulants'...
+    ] ...
+    );
 end
