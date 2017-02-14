@@ -8,21 +8,23 @@ addpath(genpath(fullfile(FuncPath,'SPF_Aux')));
 global SPF_FLAGS;
 SPF_FLAGS=[];
 SPF_FLAGS.VERBOSE=1;
-SEED=29;
+GLOBAL_SEED=100;
 K=7; % 27 elements virtual array
 K=5; % 15 elements virtual array
+%K=9; % 45 elements virtual array
 nSources=8;
 ULAs_AngleVEC_DEG=[45 -45];
 SourcesSpan=360;
 Offset_DEG=0;
 DenseElementsSpacing=0.1;
 SparseToDense_FACTOR=3.5;
-nSnapshots=1000;
-
+nSnapshots=100;
 %% SimCfg
 rng('default');
-rng(SEED);
+rng(GLOBAL_SEED);
 if true
+    %% SEEDS
+    SimCfg.Seeds={100 200};
     %% Algorithms
     SimCfg.Algorithms={...
         ... 'CHECK' ...
@@ -168,16 +170,20 @@ if true
                 ScenarioCfg.fCarrier=1e9;
                 ScenarioCfg.PropagationSpeed=3e8;
                 %% Statistics
-                ScenarioCfg.Noise.SNR=inf;
+                SNR_VEC=-10:5:20;
                 %% Algorithm
                 ScenarioCfg.DOA.res=0.1;
             end
             %% Sources
-            ScenarioCfg.Sources.SignalType='CW';
+            %ScenarioCfg.Sources.SignalType='CW';
             ScenarioCfg.Sources.SignalType='QAM';
         end
-        SimCfg.Scenarios{end+1}=ScenarioCfg;
+        for SNR_VAL=SNR_VEC
+            ScenarioCfg.Noise.SNR=SNR_VAL;
+            SimCfg.Scenarios{end+1}=ScenarioCfg;
+        end
     end
 end
 %% Execute
-SPF_Main(SimCfg);
+SimResults=SPF_Main(SimCfg);
+close all;

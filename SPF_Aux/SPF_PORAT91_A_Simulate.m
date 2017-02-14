@@ -84,5 +84,7 @@ for AngleID=1:size(Response.MAT,2)
 end
 PhiRes=360/size(Response.MAT,2);
 PhiVEC=0:PhiRes:(360-PhiRes/2);
-figure;plot(PhiVEC(:),reshape(1./d(1:length(PhiVEC)),[],1));
+Results.DOA_Est.PhiVEC=PhiVEC;
+Results.DOA_Est.Spectra=reshape(1./d(1:length(PhiVEC)),[],1);
+figure;plot(PhiVEC(:),Results.DOA_Est.Spectra(:));
 end
